@@ -21,6 +21,10 @@
 			      <input type="hidden" th:name="id" th:value="${todo.id}" />
 			      <button type="submit">削除</button>
 			    </form>
+			    <form th:action="@{/edit}" method="get" style="display:inline;">
+				    <input type="hidden" name="id" th:value="${todo.id}" />
+				    <button type="submit">編集</button>
+				</form>
         </li>
         
     </ul>

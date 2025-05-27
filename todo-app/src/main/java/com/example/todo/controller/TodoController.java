@@ -1,6 +1,7 @@
 package com.example.todo.controller;
 
 import com.example.todo.entity.Todo;
+
 import com.example.todo.service.TodoService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,4 +34,18 @@ public class TodoController {
         todoService.delete(id);
         return "redirect:/"; // 一覧に戻す
     }
+    
+    @GetMapping("/edit")
+    public String editTodo(@RequestParam Long id, Model model) {
+        Todo todo = todoService.findById(id); // Serviceを使う
+        model.addAttribute("todo", todo);
+        return "edit";
+    }
+
+    @PostMapping("/update")
+    public String updateTodo(@ModelAttribute Todo todo) {
+        todoService.save(todo); // Repositoryには直接アクセスしない
+        return "redirect:/";
+    }
+
 }
