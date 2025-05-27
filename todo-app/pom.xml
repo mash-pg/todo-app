@@ -36,7 +36,12 @@
     		<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 		<!-- 作成 -->		
-		
+		<dependency>
+    	<!--セキュリティ　CSRF対策-->
+    	<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<!--　終了-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>

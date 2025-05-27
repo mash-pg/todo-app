@@ -6,16 +6,23 @@
 </head>
 <body>
     <h1>Todo一覧</h1>
-
-    <form action="/add" method="post">
-        <input type="text" name="task" placeholder="タスクを入力" required>
-        <button type="submit">追加</button>
-    </form>
+<!-- 	<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />	
+ -->
+	<form th:action="@{/add}" method="post">
+	    <input type="text" name="task" placeholder="タスクを入力">
+	    <button type="submit">追加</button>
+	</form>
+	
 
     <ul>
         <li th:each="todo : ${todoList}">
-            <span th:text="${todo.task}">サンプル</span>
+            <span th:text="${todo.task}">タスク</span>
+			    <form th:action="@{/delete}" method="post" style="display:inline;">
+			      <input type="hidden" th:name="id" th:value="${todo.id}" />
+			      <button type="submit">削除</button>
+			    </form>
         </li>
+        
     </ul>
 </body>
 </html>

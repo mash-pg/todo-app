@@ -27,4 +27,10 @@ public class TodoController {
         todoService.save(todo);
         return "redirect:/";
     }
+    
+    @PostMapping("/delete")
+    public String delete(@RequestParam("id") Long id) {
+        todoService.delete(id);
+        return "redirect:/"; // 一覧に戻す
+    }
 }
