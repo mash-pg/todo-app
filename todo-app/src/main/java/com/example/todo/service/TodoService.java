@@ -19,8 +19,8 @@ public class TodoService {
         return todoRepository.findAll();
     }
 
-    public void save(Todo todo) {
-        todoRepository.save(todo);
+    public Todo save(Todo todo) {
+        return todoRepository.save(todo);
     }
     
     public void delete(Long id) {
