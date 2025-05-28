@@ -22,7 +22,14 @@ public class TodoController {
         model.addAttribute("todo", new Todo());
         return "todo";
     }
-
+    
+    @GetMapping("/todo")
+    public String todoList(Model model) {
+        // 初期はダミー画面でもOK
+        model.addAttribute("message", "ログイン成功！これはTodo画面です。");
+        return "todo";  // → templates/todo.html を表示
+    }
+    
     @PostMapping("/add")
     public String addTodo(@ModelAttribute Todo todo) {
         todoService.save(todo);
