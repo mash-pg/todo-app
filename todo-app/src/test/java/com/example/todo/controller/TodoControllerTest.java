@@ -2,8 +2,10 @@ package com.example.todo.controller;
 
 import com.example.todo.entity.Todo;
 import com.example.todo.entity.User;
+import com.example.todo.entity.UserTodo;
 import com.example.todo.repository.TodoRepository;
 import com.example.todo.repository.UserRepository;
+import com.example.todo.repository.UserTodoRepository;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +29,7 @@ public class TodoControllerTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepository userRepository;
     @Autowired private TodoRepository todoRepository;
+    @Autowired private UserTodoRepository userTodoRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @BeforeAll
@@ -37,12 +40,21 @@ public class TodoControllerTest {
             user1.setPassword(passwordEncoder.encode("pass1"));
             user1.setEnabled(true);
             user1.setRole("ROLE_USER");
-            userRepository.save(user1);
+            user1 = userRepository.save(user1); // 保存後のID取得に必要
 
+            // ToDoの作成
             Todo todo = new Todo();
             todo.setTask("user1のタスク");
-            todo.setUser(user1);
-            todoRepository.save(todo);
+            todo = todoRepository.save(todo);
+
+            // 中間テーブルに登録
+            UserTodo userTodo = new UserTodo();
+            userTodo.setUserId(user1.getId());
+            userTodo.setTodoId(todo.getId());
+            userTodo.setUser(user1);
+            userTodo.setTodo(todo);
+            userTodo.setRole("OWNER");
+            userTodoRepository.save(userTodo);
         }
     }
 

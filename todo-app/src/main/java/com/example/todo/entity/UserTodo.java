@@ -19,15 +19,32 @@ public class UserTodo {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
+    /*
+     * EAGERは余り利用されない
+     * */
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    @JoinColumn(name = "todo_id", insertable = false, updatable = false)
+//    private Todo todo;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "todo_id", insertable = false, updatable = false)
     private Todo todo;
-
+    
     @Column(length = 20)
     private String role = "OWNER"; // または "COLLABORATOR" など
 
     // --- Getter & Setter ---
+    // ✅ デフォルトコンストラクタ（必須）
+    public UserTodo() {}
 
+    // ✅ 任意の便利コンストラクタ
+    public UserTodo(User user, Todo todo) {
+        this.user = user;
+        this.todo = todo;
+        this.userId = user.getId();
+        this.todoId = todo.getId();
+        this.role = "OWNER";
+    }
+    
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
 
@@ -42,4 +59,6 @@ public class UserTodo {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    
+
 }

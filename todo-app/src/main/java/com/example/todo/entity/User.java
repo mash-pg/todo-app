@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -44,6 +45,9 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserTodo> userTodos;
+
     @PrePersist
     public void prePersist() {
         createdAt = updatedAt = LocalDateTime.now();
@@ -53,8 +57,6 @@ public class User implements UserDetails {
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    // --- Getter / Setter ---
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -83,7 +85,9 @@ public class User implements UserDetails {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    // --- UserDetails メソッド ---
+    public Set<UserTodo> getUserTodos() { return userTodos; }
+    public void setUserTodos(Set<UserTodo> userTodos) { this.userTodos = userTodos; }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role));

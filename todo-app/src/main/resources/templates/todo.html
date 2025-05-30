@@ -1,36 +1,37 @@
-
-<!-- templates/todo.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>ToDoリスト</title>
+    <meta charset="UTF-8">
+    <title>ToDo一覧</title>
 </head>
 <body>
 <h2 th:text="${username}"></h2>
 
 <h3>ToDo追加</h3>
 <form th:action="@{/add}" method="post" th:object="${todo}">
-    <input type="text" th:field="*{task}" placeholder="新しいタスク" required />
+    <input type="text" th:field="*{task}" placeholder="タスクを入力" required />
     <button type="submit">追加</button>
 </form>
 
 <h3>ToDo一覧</h3>
 <ul>
-    <li th:each="item : ${todoList}">
-        <span th:text="${item.task}" style="margin-right:10px"></span>
+    <li th:each="ut : ${userTodoList}">
+        <span th:text="${ut.todo.task}" style="margin-right:10px"></span>
+
         <form th:action="@{/delete}" method="post" style="display:inline">
-            <input type="hidden" name="id" th:value="${item.id}" />
+            <input type="hidden" name="id" th:value="${ut.todo.id}" />
             <button type="submit">削除</button>
         </form>
+
         <form th:action="@{/edit}" method="get" style="display:inline">
-            <input type="hidden" name="id" th:value="${item.id}" />
+            <input type="hidden" name="id" th:value="${ut.todo.id}" />
             <button type="submit">編集</button>
         </form>
     </li>
 </ul>
+
 <form th:action="@{/logout}" method="post">
     <button type="submit">ログアウト</button>
 </form>
-
 </body>
 </html>

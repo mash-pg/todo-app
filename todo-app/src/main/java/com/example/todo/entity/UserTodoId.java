@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class UserTodoId implements Serializable {
-
     private Long userId;
     private Long todoId;
 
@@ -20,7 +19,8 @@ public class UserTodoId implements Serializable {
         if (this == o) return true;
         if (!(o instanceof UserTodoId)) return false;
         UserTodoId that = (UserTodoId) o;
-        return Objects.equals(userId, that.userId) && Objects.equals(todoId, that.todoId);
+        return Objects.equals(userId, that.userId) &&
+               Objects.equals(todoId, that.todoId);
     }
 
     @Override

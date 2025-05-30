@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "todos")
@@ -13,9 +15,10 @@ public class Todo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id")
-    private User user;
+    // 中間テーブルで管理するため、User直接参照は削除
+    //@ManyToOne(optional = false)
+    //@JoinColumn(name = "user_id")
+    //private User user;
 
     @Column(length = 30, nullable = false)
     private String task;
@@ -37,6 +40,9 @@ public class Todo {
     @Column(nullable = false)
     private boolean deleted = false;
 
+    @OneToMany(mappedBy = "todo", cascade = CascadeType.ALL)
+    private List<UserTodo> userTodos = new ArrayList<>();
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -54,9 +60,6 @@ public class Todo {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
 
     public String getTask() { return task; }
     public void setTask(String task) { this.task = task; }
@@ -81,4 +84,7 @@ public class Todo {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    public List<UserTodo> getUserTodos() { return userTodos; }
+    public void setUserTodos(List<UserTodo> userTodos) { this.userTodos = userTodos; }
 }
