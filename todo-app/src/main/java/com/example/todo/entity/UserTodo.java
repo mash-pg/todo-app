@@ -19,12 +19,6 @@ public class UserTodo {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
-    /*
-     * EAGERは余り利用されない
-     * */
-//    @ManyToOne(fetch = FetchType.EAGER)
-//    @JoinColumn(name = "todo_id", insertable = false, updatable = false)
-//    private Todo todo;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "todo_id", insertable = false, updatable = false)
     private Todo todo;

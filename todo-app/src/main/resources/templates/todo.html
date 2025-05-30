@@ -15,16 +15,18 @@
 
 <h3>ToDo一覧</h3>
 <ul>
-    <li th:each="ut : ${userTodoList}">
-        <span th:text="${ut.todo.task}" style="margin-right:10px"></span>
+    <li th:each="todo : ${todoList}">
+        <span th:text="${todo.task}" style="margin-right:10px"></span>
+
+        <span th:text="${todo.createdAt}" style="margin-right:10px"></span>
 
         <form th:action="@{/delete}" method="post" style="display:inline">
-            <input type="hidden" name="id" th:value="${ut.todo.id}" />
+            <input type="hidden" name="id" th:value="${todo.id}" />
             <button type="submit">削除</button>
         </form>
 
         <form th:action="@{/edit}" method="get" style="display:inline">
-            <input type="hidden" name="id" th:value="${ut.todo.id}" />
+            <input type="hidden" name="id" th:value="${todo.id}" />
             <button type="submit">編集</button>
         </form>
     </li>

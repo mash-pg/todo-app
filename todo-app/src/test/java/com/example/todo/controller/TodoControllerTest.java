@@ -64,10 +64,10 @@ public class TodoControllerTest {
     void testUserSeesOnlyOwnTodos() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(model().attributeExists("todoList"))
-                .andExpect(model().attribute("todoList", Matchers.hasSize(1)))
-                .andExpect(model().attribute("todoList", Matchers.everyItem(
-                        Matchers.hasProperty("task", Matchers.containsString("user1"))
+                .andExpect(model().attributeExists("userTodoList"))
+                .andExpect(model().attribute("userTodoList", Matchers.hasSize(1)))
+                .andExpect(model().attribute("userTodoList", Matchers.everyItem(
+                	    Matchers.hasProperty("todo", Matchers.hasProperty("task", Matchers.containsString("user1")))
                 )));
     }
 }

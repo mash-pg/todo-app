@@ -1,5 +1,6 @@
 package com.example.todo.controller;
 
+import com.example.todo.dto.TodoDto;
 import com.example.todo.entity.Todo;
 import com.example.todo.entity.User;
 import com.example.todo.entity.UserTodo;
@@ -13,7 +14,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 @Controller
 public class TodoController {
 
@@ -21,6 +25,8 @@ public class TodoController {
     private final UserRepository userRepository;
     private final UserTodoRepository userTodoRepository;
     private final TodoRepository todoRepository;
+    private static final Logger logger = LoggerFactory.getLogger(TodoController.class);
+
 
     public TodoController(TodoService todoService,
                           UserRepository userRepository,
@@ -32,34 +38,25 @@ public class TodoController {
         this.todoRepository = todoRepository;
     }
 
-    // --- 一覧表示 ---　LAZYでのやり方
-//    @GetMapping("/")
-//    public String index(Model model, Principal principal) {
-//        String username = principal.getName();
-//        
-//        User user = userRepository.findByUsername(username).orElseThrow();
-//
-//        List<UserTodo> userTodoList = userTodoRepository.findByUser(user);
-//
-//        model.addAttribute("username", username + " さんがログインしています");
-//        model.addAttribute("userTodoList", userTodoList); // 修正
-//        model.addAttribute("todo", new Todo());
-//
-//        return "todo";
-//    }
+
+
     @GetMapping("/")
     public String index(Model model, Principal principal) {
         String username = principal.getName();
         User user = userRepository.findByUsername(username).orElseThrow();
 
-        // ✅ JOIN FETCH を使って ToDo を含んだ UserTodo を取得
         List<UserTodo> userTodoList = userTodoRepository.findWithTodoByUser(user);
 
-        model.addAttribute("username", username + " さんがログインしています");
-        model.addAttribute("userTodoList", userTodoList); // HTML へ渡す
-        model.addAttribute("todo", new Todo()); // 新規追加フォーム用
+        // DTOに変換
+        List<TodoDto> todoDtoList = userTodoList.stream()
+                .map(userTodo -> new TodoDto(userTodo.getTodo()))
+                .toList();
 
-        return "todo"; // templates/todo.html を表示
+        model.addAttribute("username", username + " さんがログインしています");
+        model.addAttribute("todoList", todoDtoList); // ← DTOを渡す
+        model.addAttribute("todo", new Todo());      // 新規追加フォーム用
+
+        return "todo";
     }
 
     // --- ToDo追加 ---
@@ -111,8 +108,19 @@ public class TodoController {
     public String updateTodo(@ModelAttribute Todo todo, Principal principal) {
         String username = principal.getName();
         User user = userRepository.findByUsername(username).orElseThrow();
+        // 更新対象を取得して内容だけ上書き（user情報はTODOには直接持たないためスルー）
+        // 中間テーブルを確認（該当ユーザーがそのタスクのオーナーかどうか）
 
-        // 更新対象を取得して内容だけ上書き（user情報はTodoには直接持たないためスルー）
+        // 2. 中間テーブルからそのユーザーがアクセスできるTODOを取得
+        List<UserTodo> userTodos = userTodoRepository.findByUser(user);
+        boolean hasAccess = userTodos.stream()
+            .anyMatch(ut -> ut.getTodo().getId().equals(todo.getId()));
+        if (!hasAccess) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "このタスクを編集する権限がありません");
+        }else {
+            logger.info("ユーザー [{}] がタスクID [{}] の編集を実行しました", user.getUsername(), todo.getId());
+        }
+        
         Todo original = todoService.findById(todo.getId());
         original.setTask(todo.getTask());
         original.setDescription(todo.getDescription());

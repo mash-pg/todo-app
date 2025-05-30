@@ -3,6 +3,7 @@ package com.example.todo;
 import com.example.todo.entity.Todo;
 import com.example.todo.repository.TodoRepository;
 import com.example.todo.service.TodoService;
+import com.example.todo.service.TodoServiceImpl;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -22,7 +23,8 @@ public class TodoServiceTest {
     private TodoRepository todoRepository;
 
     @InjectMocks
-    private TodoService todoService;
+    private TodoServiceImpl todoService;
+
 
     @Test
     public void testFindAll() {
@@ -48,10 +50,10 @@ public class TodoServiceTest {
         verify(todoRepository, times(1)).save(todo);
     }
     
-//    @Test
-//    public void testFailExample() {
-//        assertEquals("期待値", "実際はこっち"); // 違う値 → 失敗！
-//    }
-//    
+    @Test
+    public void testFailExample() {
+        assertEquals("期待値", "実際はこっち"); // 違う値 → 失敗！
+    }
+    
 
 }
