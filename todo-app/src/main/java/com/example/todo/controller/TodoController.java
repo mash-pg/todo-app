@@ -18,6 +18,12 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 @Controller
 public class TodoController {
 
@@ -38,27 +44,33 @@ public class TodoController {
         this.todoRepository = todoRepository;
     }
 
-
-
     @GetMapping("/")
-    public String index(Model model, Principal principal) {
+    public String index(@RequestParam(defaultValue = "0") int page,
+                        Model model,
+                        Principal principal) {
+
         String username = principal.getName();
         User user = userRepository.findByUsername(username).orElseThrow();
 
-        List<UserTodo> userTodoList = userTodoRepository.findWithTodoByUser(user);
+        int pageSize = 5; // 1ページ5件
+        //昇順はascending
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("id").descending());
 
-        // DTOに変換
-        List<TodoDto> todoDtoList = userTodoList.stream()
-                .map(userTodo -> new TodoDto(userTodo.getTodo()))
+        // ★ ここでページング取得
+        Page<Todo> todoPage = todoRepository.findByUserTodos_User(user, pageable);
+
+        // DTOに変換（必要に応じて）
+        List<TodoDto> todoDtoList = todoPage.getContent().stream()
+                .map(TodoDto::new)
                 .toList();
 
         model.addAttribute("username", username + " さんがログインしています");
-        model.addAttribute("todoList", todoDtoList); // ← DTOを渡す
-        model.addAttribute("todo", new Todo());      // 新規追加フォーム用
+        model.addAttribute("todoList", todoDtoList);
+        model.addAttribute("todo", new Todo());
+        model.addAttribute("todoPage", todoPage); // ページ情報も渡す
 
         return "todo";
     }
-
     // --- ToDo追加 ---
     @PostMapping("/add")
     public String addTodo(@ModelAttribute Todo todo, Principal principal) {
@@ -99,38 +111,39 @@ public class TodoController {
     @GetMapping("/edit")
     public String editTodo(@RequestParam Long id, Model model) {
         Todo todo = todoService.findById(id);
-        model.addAttribute("todo", todo);
+        TodoDto dto = new TodoDto(todo); // ← ここでDTOに変換
+        model.addAttribute("todo", dto);
         return "edit";
     }
 
     // --- 更新処理 ---
     @PostMapping("/update")
-    public String updateTodo(@ModelAttribute Todo todo, Principal principal) {
+    public String updateTodo(@ModelAttribute TodoDto dto, Principal principal) {
         String username = principal.getName();
         User user = userRepository.findByUsername(username).orElseThrow();
-        // 更新対象を取得して内容だけ上書き（user情報はTODOには直接持たないためスルー）
-        // 中間テーブルを確認（該当ユーザーがそのタスクのオーナーかどうか）
 
-        // 2. 中間テーブルからそのユーザーがアクセスできるTODOを取得
+        // アクセス権チェック
         List<UserTodo> userTodos = userTodoRepository.findByUser(user);
         boolean hasAccess = userTodos.stream()
-            .anyMatch(ut -> ut.getTodo().getId().equals(todo.getId()));
+            .anyMatch(ut -> ut.getTodo().getId().equals(dto.getId()));
         if (!hasAccess) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "このタスクを編集する権限がありません");
-        }else {
-            logger.info("ユーザー [{}] がタスクID [{}] の編集を実行しました", user.getUsername(), todo.getId());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "編集権限がありません");
         }
-        
-        Todo original = todoService.findById(todo.getId());
-        original.setTask(todo.getTask());
-        original.setDescription(todo.getDescription());
-        original.setDueDate(todo.getDueDate());
-        original.setCompleted(todo.isCompleted());
-        original.setPriority(todo.getPriority());
-        original.setTags(todo.getTags());
 
-        todoService.save(original);
+        // ログ出力（ここ追加！）
+        logger.info("ユーザー [{}] がタスクID [{}] を編集しました", user.getUsername(), dto.getId());
 
+        // TODOエンティティにマッピングして更新
+        Todo todo = todoService.findById(dto.getId());
+        todo.setTask(dto.getTask());
+        todo.setDescription(dto.getDescription());
+        todo.setDueDate(dto.getDueDate());
+        todo.setCompleted(dto.isCompleted());
+        todo.setPriority(dto.getPriority());
+        todo.setTags(dto.getTags());
+
+        todoService.save(todo);
         return "redirect:/";
     }
+
 }

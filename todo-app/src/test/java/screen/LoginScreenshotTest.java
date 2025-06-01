@@ -34,7 +34,7 @@ public class LoginScreenshotTest {
     @Test
     void testLoginAndCaptureScreenshots() throws IOException {
         // フォルダ作成
-        Path folderPath = Paths.get("src/test/java/testscreen");
+        Path folderPath = Paths.get("src/test/java/testscreenshot/login");
         Files.createDirectories(folderPath);
 
         // ① ログイン画面へアクセス
@@ -42,8 +42,10 @@ public class LoginScreenshotTest {
         takeScreenshot(folderPath.resolve("login_screen.png"));
 
         // ② フォーム入力（name属性がusername/passwordであることが前提）
-        driver.findElement(By.name("username")).sendKeys("admin");
-        driver.findElement(By.name("password")).sendKeys("password");
+//        driver.findElement(By.name("username")).sendKeys("admin");
+//        driver.findElement(By.name("password")).sendKeys("password");
+        driver.findElement(By.name("username")).sendKeys("test1");
+        driver.findElement(By.name("password")).sendKeys("test");
         driver.findElement(By.cssSelector("button[type='submit']")).click();
 
         // 少し待つ（遷移完了のため）
