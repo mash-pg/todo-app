@@ -109,8 +109,17 @@ public class TodoController {
 
     // --- 編集画面表示 ---
     @GetMapping("/edit")
-    public String editTodo(@RequestParam Long id, Model model) {
+    public String editTodo(@RequestParam Long id, Model model,Principal principal) {
+    	String username = principal.getName();
+    	User user = userRepository.findByUsername(username).orElseThrow();
         Todo todo = todoService.findById(id);
+        
+        boolean isOwner = todo.getUserTodos().stream()
+        		.anyMatch(ut -> ut.getUser().getId().equals(user.getId())&& "OWNER".equalsIgnoreCase(ut.getRole()));
+        
+        if(!isOwner) {
+        	throw new ResponseStatusException(HttpStatus.FORBIDDEN,"編集権限がありません");
+        }
         TodoDto dto = new TodoDto(todo); // ← ここでDTOに変換
         model.addAttribute("todo", dto);
         return "edit";
@@ -127,6 +136,15 @@ public class TodoController {
         boolean hasAccess = userTodos.stream()
             .anyMatch(ut -> ut.getTodo().getId().equals(dto.getId()));
         if (!hasAccess) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "編集権限がありません");
+        }
+
+        // 🔐 OWNER認可チェック
+        boolean isOwner = userTodoRepository.findByUser(user).stream()
+                .anyMatch(ut -> ut.getTodo().getId().equals(dto.getId())
+                             && "OWNER".equalsIgnoreCase(ut.getRole()));
+
+        if (!isOwner) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "編集権限がありません");
         }
 

@@ -70,7 +70,12 @@
 		    <version>1.18.30</version> <!-- 最新安定版を使用 -->
 		    <scope>provided</scope>
 		</dependency>
-
+		<dependency>
+		    <groupId>org.junit.platform</groupId>
+		    <artifactId>junit-platform-suite</artifactId>
+		    <version>1.10.2</version> <!-- ※バージョンは最新を使用 -->
+		    <scope>test</scope>
+		</dependency>
 	    <!-- WebDriverManager (Chromeドライバ自動DL用) -->
 	    <dependency>
 	        <groupId>io.github.bonigarcia</groupId>

@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @WebMvcTest(SignupController.class)
-class SignupControllerTest {
+public class SignupControllerTest {
 	private static final Logger logger = LoggerFactory.getLogger(SignupControllerTest.class);
 
     @Autowired

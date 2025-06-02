@@ -8,7 +8,7 @@ import com.example.todo.repository.UserTodoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+import com.example.todo.exception.TodoNotFoundException;
 @Service
 public class TodoServiceImpl implements TodoService {
 
@@ -27,8 +27,10 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     public Todo findById(Long id) {
-        return todoRepository.findById(id).orElseThrow();
+        return todoRepository.findWithUserTodosById(id)
+                .orElseThrow(() -> new TodoNotFoundException("ID " + id + " のToDoが見つかりません"));
     }
+
 
     @Override
     public Todo save(Todo todo) {
