@@ -9,6 +9,9 @@ COPY .mvn .mvn
 COPY mvnw .
 COPY pom.xml .
 
+# ✅ mvnwに実行権限を付与（← これが必要！）
+RUN chmod +x mvnw
+
 # 依存関係だけ先にダウンロードしてキャッシュ活用
 RUN ./mvnw dependency:go-offline
 
