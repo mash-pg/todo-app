@@ -18,19 +18,19 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ErrorScreenshotTest {
 
     private WebDriver driver;
-    private final Path screenshotDir = Paths.get("src/test/java/testscreenshot/error");
     private WebDriverWait wait;
+    private final Path screenshotDir = Paths.get("src/test/java/testscreenshot/error");
 
     @BeforeAll
     void setupAll() throws IOException {
         WebDriverManager.chromedriver().setup();
-        Files.createDirectories(screenshotDir); // スクショ保存フォルダ
+        Files.createDirectories(screenshotDir); // スクショ保存先を作成
     }
 
     @BeforeEach
     void setup() {
         ChromeOptions options = new ChromeOptions();
-        // options.addArguments("--headless=new"); // CI用途などで必要なら有効に
+        // options.addArguments("--headless=new"); // 必要ならヘッドレス化
         driver = new ChromeDriver(options);
         driver.manage().window().maximize();
         wait = new WebDriverWait(driver, Duration.ofSeconds(5));
@@ -43,93 +43,89 @@ public class ErrorScreenshotTest {
         }
     }
 
-    // --- 404 Not Found テスト ---
+    // ========================
+    // ▼ 各ステータス別テスト
+    // ========================
     @Test
-    void test404Page() throws IOException {
-        driver.get("http://localhost:8080/login");
+    void test200Page() throws IOException {
+        loginAs("admin", "password");
 
-        // ログイン処理
-        driver.findElement(By.name("username")).sendKeys("admin");   // ←非オーナーユーザー
-        driver.findElement(By.name("password")).sendKeys("password");
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        driver.get("http://localhost:8080/");
 
-        wait.until(ExpectedConditions.urlContains("/")); // ログイン完了後の遷移待ち
-        
-        driver.get("http://localhost:8080/asdf");
+        // 正常表示の指標となる要素を待機（ToDo一覧の見出しなど）
+        WebElement heading = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.tagName("h1")
+        ));
 
-        // "存在しません" または "404" を含むまで待機
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(
-        	    By.tagName("body"),
-        	    "お探しのページは見つかりませんでした"
-        	));
-
-        takeScreenshot("404_screen.png");
-
-        String bodyText = driver.findElement(By.tagName("body")).getText();
+        // 見出しが「ToDo一覧」やユーザー名を含むか確認（必要に応じて調整）
+        String headingText = heading.getText();
         assertTrue(
-            bodyText.contains("404") || bodyText.contains("Not Found") || bodyText.contains("存在しません"),
-            "404ページの内容が確認できません"
+            headingText.contains("ログイン") || headingText.contains("ToDo") || headingText.contains("さんがログインしています"),
+            "200ページが正しく表示されていません"
         );
+
+        takeScreenshot("success_200.png");
     }
 
-    // --- 403 Forbidden テスト ---
-    @Test
-    void test403Page() throws IOException {
-        driver.get("http://localhost:8080/login");
-
-        // ログイン処理
-        driver.findElement(By.name("username")).sendKeys("admin");   // ←非オーナーユーザー
-        driver.findElement(By.name("password")).sendKeys("password");
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
-
-        wait.until(ExpectedConditions.urlContains("/")); // ログイン完了後の遷移待ち
-
-        driver.get("http://localhost:8080/edit?id=10");  // ←他人のタスクIDに変更すること
-
-        // "403" または "権限がありません" を含むまで待機
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), "権限がありません"));
-
-        takeScreenshot("403_screen.png");
-
-        String bodyText = driver.findElement(By.tagName("body")).getText();
-        assertTrue(
-            bodyText.contains("403") || bodyText.contains("Forbidden") || bodyText.contains("権限がありません"),
-            "403ページの内容が確認できません"
-        );
-    }
-
-    // --- 400 不正なリクエストが行われました テスト ---
     @Test
     void test400Page() throws IOException {
-        driver.get("http://localhost:8080/login");
+        loginAs("admin", "password");
+        driver.get("http://localhost:8080/edit?id=abc123"); // 不正なIDで400エラー発生
 
-        // ログイン処理
-        driver.findElement(By.name("username")).sendKeys("admin");   // ←非オーナーユーザー
-        driver.findElement(By.name("password")).sendKeys("password");
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
-
-        wait.until(ExpectedConditions.urlContains("/")); // ログイン完了後の遷移待ち
-        
-    
-        
-        
-        driver.get("http://localhost:8080/edit?id=abc123");
-
-        // "存在しません" または "400" を含むまで待機
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(
-        	    By.tagName("body"),
-        	    "不正なリクエストが行われました。"
-        	));
-
-        takeScreenshot("400_screen.png");
-
-        String bodyText = driver.findElement(By.tagName("body")).getText();
-        assertTrue(
-            bodyText.contains("400") || bodyText.contains("Bad Request") || bodyText.contains("不正なID"),
-            "不正なリクエストが行われました。"
-        );
+        String statusCode = waitForStatusCodeAndCapture("400");
+        assertEquals("400", statusCode, "ステータスコードが 400 ではありません");
     }
-    // --- スクリーンショット保存処理 ---
+
+    @Test
+    void test403Page() throws IOException {
+        loginAs("admin", "password");
+        driver.get("http://localhost:8080/edit?id=10"); // 他人のタスクID（OWNERでないID）を指定
+
+        String statusCode = waitForStatusCodeAndCapture("403");
+        assertEquals("403", statusCode, "ステータスコードが 403 ではありません");
+    }
+
+    @Test
+    void test404Page() throws IOException {
+        loginAs("admin", "password");
+        driver.get("http://localhost:8080/asdf"); // 存在しないURLにアクセス
+
+        String statusCode = waitForStatusCodeAndCapture("404");
+        assertEquals("404", statusCode, "ステータスコードが 404 ではありません");
+    }
+
+    @Test
+    void test500Page() throws IOException {
+        loginAs("admin", "password");
+        driver.get("http://localhost:8080/cause-error"); // RuntimeExceptionを明示的に発生
+
+        String statusCode = waitForStatusCodeAndCapture("500");
+        assertEquals("500", statusCode, "ステータスコードが 500 ではありません");
+    }
+
+    // ========================
+    // ▼ 共通処理
+    // ========================
+
+    private void loginAs(String username, String password) {
+        driver.get("http://localhost:8080/login");
+        driver.findElement(By.name("username")).sendKeys(username);
+        driver.findElement(By.name("password")).sendKeys(password);
+        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        wait.until(ExpectedConditions.urlContains("/"));
+    }
+
+    private String waitForStatusCodeAndCapture(String expectedStatusCode) throws IOException {
+        WebElement statusCodeElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.cssSelector("h1.display-4.text-danger")
+        ));
+
+        String actualStatusCode = statusCodeElement.getText();
+        takeScreenshot("error_" + actualStatusCode + ".png");
+
+        return actualStatusCode;
+    }
+
     private void takeScreenshot(String filename) throws IOException {
         File src = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
         Path dest = screenshotDir.resolve(filename);

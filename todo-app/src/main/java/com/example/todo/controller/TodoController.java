@@ -114,12 +114,18 @@ public class TodoController {
     	User user = userRepository.findByUsername(username).orElseThrow();
         Todo todo = todoService.findById(id);
         
-        boolean isOwner = todo.getUserTodos().stream()
-        		.anyMatch(ut -> ut.getUser().getId().equals(user.getId())&& "OWNER".equalsIgnoreCase(ut.getRole()));
-        
-        if(!isOwner) {
-        	throw new ResponseStatusException(HttpStatus.FORBIDDEN,"編集権限がありません");
+
+        // ✅ 中間テーブル UserTodo 経由でアクセス権チェック
+        boolean isOwner = todo.getUserTodos() != null &&
+                          todo.getUserTodos().stream()
+                              .filter(ut -> ut.getUser() != null)
+                              .anyMatch(ut -> ut.getUser().getId().equals(user.getId()) &&
+                                              "OWNER".equalsIgnoreCase(ut.getRole()));
+
+        if (!isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "編集権限がありません");
         }
+        
         TodoDto dto = new TodoDto(todo); // ← ここでDTOに変換
         model.addAttribute("todo", dto);
         return "edit";
@@ -163,5 +169,10 @@ public class TodoController {
         todoService.save(todo);
         return "redirect:/";
     }
+	 // --- 500エラーのテスト用エンドポイント ---
+	    @GetMapping("/cause-error")
+	    public String causeError() {
+	        throw new RuntimeException("テスト用の500エラーです");
+	    }
 
 }
