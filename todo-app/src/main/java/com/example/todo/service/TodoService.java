@@ -5,6 +5,9 @@ import com.example.todo.entity.User;
 
 import java.util.List;
 
+/*
+ * @param id,todo,user
+ * */
 public interface TodoService {
     List<Todo> findAll();
     Todo findById(Long id);
