@@ -10,6 +10,11 @@ import com.example.todo.UserAuthIntegrationTest;
 import screen.ErrorScreenshotTest;
 import screen.LoginScreenshotTest;
 import screen.SignupValidationTest;
+/**
+ * 単体テストと画面テスト一括実行処理
+ * @author mash
+ * @version 1.0
+ */
 
 @Suite
 @SelectClasses({
@@ -19,6 +24,7 @@ import screen.SignupValidationTest;
 	TodoServiceIntegrationTest.class,
 	TodoServiceTest.class,
 	UserAuthIntegrationTest.class,
+	//画面テスト
 	ErrorScreenshotTest.class,
 	LoginScreenshotTest.class,
 	SignupValidationTest.class,

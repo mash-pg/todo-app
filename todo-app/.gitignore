@@ -45,3 +45,5 @@ Thumbs.db
 *.png
 !src/test/java/testscreenshot/signup/*.png
 !src/test/java/testscreenshot/login/*.png
+
+doc
