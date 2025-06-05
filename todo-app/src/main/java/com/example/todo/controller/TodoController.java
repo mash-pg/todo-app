@@ -23,6 +23,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import java.io.IOException;
+
 
 @Controller
 public class TodoController {
@@ -43,23 +50,36 @@ public class TodoController {
         this.userTodoRepository = userTodoRepository;
         this.todoRepository = todoRepository;
     }
-
+ // user が存在しないときの処理
+    public void handleInvalidUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+        response.sendRedirect("/login?expired"); // ログイン画面にリダイレクト
+    }
     @GetMapping("/")
     public String index(@RequestParam(defaultValue = "0") int page,
                         Model model,
-                        Principal principal) {
+                        Principal principal,
+                        HttpServletRequest request,
+                        HttpServletResponse response) throws IOException {
 
         String username = principal.getName();
-        User user = userRepository.findByUsername(username).orElseThrow();
+        User user;
 
-        int pageSize = 5; // 1ページ5件
-        //昇順はascending
+        try {
+            user = userRepository.findByUsername(username).orElseThrow();
+        } catch (Exception e) {
+            logger.warn("ユーザーが存在しません。ログアウトしてリダイレクトします: {}", username);
+            handleInvalidUser(request, response);
+            return null; // リダイレクトしたのでここで終了
+        }
+
+        int pageSize = 5;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("id").descending());
-
-        // ★ ここでページング取得
         Page<Todo> todoPage = todoRepository.findByUserTodos_User(user, pageable);
 
-        // DTOに変換（必要に応じて）
         List<TodoDto> todoDtoList = todoPage.getContent().stream()
                 .map(TodoDto::new)
                 .toList();
@@ -67,10 +87,11 @@ public class TodoController {
         model.addAttribute("username", username + " さんがログインしています");
         model.addAttribute("todoList", todoDtoList);
         model.addAttribute("todo", new Todo());
-        model.addAttribute("todoPage", todoPage); // ページ情報も渡す
+        model.addAttribute("todoPage", todoPage);
 
         return "todo";
     }
+
     // --- ToDo追加 ---
     @PostMapping("/add")
     public String addTodo(@ModelAttribute Todo todo, Principal principal) {
@@ -101,6 +122,7 @@ public class TodoController {
         boolean isOwner = userTodoRepository.findByUser(user).stream()
                 .anyMatch(ut -> ut.getTodo().getId().equals(id) && ut.getRole().equals("OWNER"));
         if (isOwner) {
+        	
             todoService.delete(id);
         }
 
@@ -170,9 +192,9 @@ public class TodoController {
         return "redirect:/";
     }
 	 // --- 500エラーのテスト用エンドポイント ---
-	    @GetMapping("/cause-error")
-	    public String causeError() {
-	        throw new RuntimeException("テスト用の500エラーです");
-	    }
+    @GetMapping("/cause-error")
+    public String causeError() {
+        throw new RuntimeException("テスト用の500エラーです");
+    }
 
 }

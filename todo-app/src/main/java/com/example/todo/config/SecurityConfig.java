@@ -26,6 +26,7 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/", true)
                 .permitAll()
             )
+            
             .logout(logout -> logout
             	.logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
