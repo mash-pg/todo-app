@@ -84,7 +84,7 @@ public class TodoController {
                 .map(TodoDto::new)
                 .toList();
 
-        model.addAttribute("username", username + " さんがログインしています");
+        model.addAttribute("username", username );
         model.addAttribute("todoList", todoDtoList);
         model.addAttribute("todo", new Todo());
         model.addAttribute("todoPage", todoPage);

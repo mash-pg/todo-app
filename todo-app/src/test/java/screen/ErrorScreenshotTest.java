@@ -121,6 +121,15 @@ public class ErrorScreenshotTest {
         ));
 
         String actualStatusCode = statusCodeElement.getText();
+        
+        // === 5秒待ってからスクリーンショット ===
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt(); // 割り込み状態を復元
+        }
+        
         takeScreenshot("error_" + actualStatusCode + ".png");
 
         return actualStatusCode;

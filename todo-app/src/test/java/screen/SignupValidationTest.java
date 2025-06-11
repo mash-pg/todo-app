@@ -41,11 +41,18 @@ public class SignupValidationTest {
     void tearDown(TestInfo testInfo) {
         if (driver != null) {
             try {
+                // === 5秒待ってからスクリーンショットを撮る ===
+                Thread.sleep(5000);
+
                 takeScreenshot(testInfo.getDisplayName());  // 各テスト名で保存
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt(); // 割り込み状態を復元
+            } finally {
+                driver.quit();
             }
-            driver.quit();
         }
     }
 
