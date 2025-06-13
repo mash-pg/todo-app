@@ -1,16 +1,17 @@
 package com.example.todo.controller;
 
-import com.example.todo.dto.SignupForm;
 import com.example.todo.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,16 +20,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @WebMvcTest(SignupController.class)
+@Import(SignupControllerTest.MockConfig.class) 
 public class SignupControllerTest {
 	private static final Logger logger = LoggerFactory.getLogger(SignupControllerTest.class);
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @TestConfiguration
+    static class MockConfig {
+        @Bean
+        UserRepository userRepository() {
+            return Mockito.mock(UserRepository.class);
+        }
+
+        @Bean
+        PasswordEncoder passwordEncoder() {
+            return Mockito.mock(PasswordEncoder.class);
+        }
+    }
+
+    @Autowired
     private UserRepository userRepository;
 
-    @MockBean
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Test

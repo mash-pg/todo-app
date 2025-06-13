@@ -4,7 +4,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
 import com.example.todo.dto.LoginForm;
@@ -26,7 +25,7 @@ public class LoginController {
     // ログイン処理（バリデーション付きの例）
     @PostMapping("/login")
     public String doLogin(
-        @ModelAttribute("loginForm") @Valid LoginForm loginForm,
+        @Valid LoginForm loginForm,
         BindingResult result
     ) {
         if (result.hasErrors()) {

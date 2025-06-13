@@ -114,7 +114,7 @@ public class TodoController {
 
     // --- ToDo削除 ---
     @PostMapping("/delete")
-    public String delete(@RequestParam("id") Long id, Principal principal) {
+    public String delete( Long id, Principal principal) {
         String username = principal.getName();
         User user = userRepository.findByUsername(username).orElseThrow();
 

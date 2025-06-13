@@ -4,7 +4,6 @@ package com.example.todo.repository;
 import com.example.todo.entity.Todo;
 import com.example.todo.entity.User;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;

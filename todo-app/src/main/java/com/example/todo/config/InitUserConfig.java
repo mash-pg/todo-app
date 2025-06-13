@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class InitUserConfig {
 
     @Bean
-    public CommandLineRunner initUser(UserRepository userRepository, PasswordEncoder encoder) {
+    CommandLineRunner initUser(UserRepository userRepository, PasswordEncoder encoder) {
         return args -> {
             if (userRepository.findByUsername("admin").isEmpty()) {
                 User user = new User();

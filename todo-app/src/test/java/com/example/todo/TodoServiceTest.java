@@ -2,7 +2,6 @@ package com.example.todo;
 
 import com.example.todo.entity.Todo;
 import com.example.todo.repository.TodoRepository;
-import com.example.todo.service.TodoService;
 import com.example.todo.service.TodoServiceImpl;
 
 import org.junit.jupiter.api.Test;
