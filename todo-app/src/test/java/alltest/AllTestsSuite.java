@@ -28,7 +28,10 @@ import screen.SignupValidationTest;
 	ErrorScreenshotTest.class,
 	LoginScreenshotTest.class,
 	SignupValidationTest.class,
-	
+    // ★ ログ表示用
+    alltest.TestSuiteLogger.class,
 })
+
+
 public class AllTestsSuite {
 }
